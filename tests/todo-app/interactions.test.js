@@ -93,6 +93,47 @@ describe('C10, C11, C12: delete requires a swipe-reveal, not a plain tap', () =>
 
     assert.equal(row.querySelector('[data-testid="delete-control"]'), null);
   });
+
+  test('swiping back right within the same gesture hides an already-revealed control', async () => {
+    const window = await loadApp({ seedTasks: seedOneTask() });
+    const row = window.document.querySelector('[data-testid="task"]');
+    const touch = (type, clientX) =>
+      row.dispatchEvent(
+        new window.CustomEvent(type, {
+          bubbles: true,
+          detail: { touches: [{ clientX, clientY: 10 }] },
+        }),
+      );
+    touch('touchstart', 200);
+    touch('touchmove', 40); // reveal it
+    assert.ok(row.querySelector('[data-testid="delete-control"]'));
+
+    touch('touchmove', 190); // drag back right, below the threshold again
+    touch('touchend', 190);
+
+    assert.equal(row.querySelector('[data-testid="delete-control"]'), null);
+  });
+
+  test('a plain tap elsewhere on the row dismisses an already-revealed delete control', async () => {
+    const window = await loadApp({ seedTasks: seedOneTask() });
+    const row = window.document.querySelector('[data-testid="task"]');
+    const touch = (type, clientX) =>
+      row.dispatchEvent(
+        new window.CustomEvent(type, {
+          bubbles: true,
+          detail: { touches: [{ clientX, clientY: 10 }] },
+        }),
+      );
+    touch('touchstart', 200);
+    touch('touchmove', 40);
+    touch('touchend', 40);
+    assert.ok(row.querySelector('[data-testid="delete-control"]'), 'should be revealed after the swipe');
+
+    row.click();
+
+    assert.equal(row.querySelector('[data-testid="delete-control"]'), null);
+    assert.equal(window.document.querySelectorAll('[data-testid="task"]').length, 1, 'the task itself must survive');
+  });
 });
 
 describe('C23 + C24: tapping a task toggles its description open, then closed', () => {

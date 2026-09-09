@@ -152,8 +152,18 @@ function renderTaskRow(doc, storage, task) {
   // Ignore clicks that originate on an interactive control (checkbox,
   // urgency picker, delete button) — only a tap on the row's own surface
   // toggles the description. A task without one has nothing to toggle.
+  // If the delete control is currently revealed, a tap elsewhere on the
+  // row dismisses it instead of also toggling the description — otherwise
+  // there'd be no way to put it away short of a full reverse swipe.
   row.addEventListener('click', (event) => {
     if (event.target.closest('input, select, button')) return;
+
+    const deleteControl = row.querySelector('[data-testid="delete-control"]');
+    if (deleteControl) {
+      deleteControl.remove();
+      return;
+    }
+
     const description = row.querySelector('[data-testid="description"]');
     if (!description) return;
     description.hidden = !description.hidden;
@@ -174,6 +184,21 @@ function touchX(event) {
   return touch ? touch.clientX : null;
 }
 
+function createDeleteControl(doc, storage, task, row) {
+  const deleteControl = doc.createElement('button');
+  deleteControl.type = 'button';
+  deleteControl.className = 'delete-control';
+  deleteControl.dataset.testid = 'delete-control';
+  deleteControl.setAttribute('aria-label', 'Delete task');
+  deleteControl.textContent = 'Delete';
+  deleteControl.addEventListener('click', () => {
+    const tasks = deleteTask(loadTasks(storage), task.id);
+    persistTasks(doc, storage, tasks);
+    renderTaskList(doc, storage, tasks);
+  });
+  return deleteControl;
+}
+
 function attachSwipeToDelete(doc, storage, task, row) {
   let startX = null;
 
@@ -182,23 +207,19 @@ function attachSwipeToDelete(doc, storage, task, row) {
   });
 
   row.addEventListener('touchmove', (event) => {
-    if (startX === null || row.querySelector('[data-testid="delete-control"]')) return;
+    if (startX === null) return;
     const currentX = touchX(event);
     if (currentX === null) return;
 
-    if (startX - currentX >= SWIPE_REVEAL_THRESHOLD) {
-      const deleteControl = doc.createElement('button');
-      deleteControl.type = 'button';
-      deleteControl.className = 'delete-control';
-      deleteControl.dataset.testid = 'delete-control';
-      deleteControl.setAttribute('aria-label', 'Delete task');
-      deleteControl.textContent = 'Delete';
-      deleteControl.addEventListener('click', () => {
-        const tasks = deleteTask(loadTasks(storage), task.id);
-        persistTasks(doc, storage, tasks);
-        renderTaskList(doc, storage, tasks);
-      });
-      row.appendChild(deleteControl);
+    // Synced continuously to the current drag, not just "reveal once and
+    // never again" — swiping back right past the threshold within the same
+    // gesture hides it, matching the standard swipe-to-delete pattern.
+    const shouldReveal = startX - currentX >= SWIPE_REVEAL_THRESHOLD;
+    const existing = row.querySelector('[data-testid="delete-control"]');
+    if (shouldReveal && !existing) {
+      row.appendChild(createDeleteControl(doc, storage, task, row));
+    } else if (!shouldReveal && existing) {
+      existing.remove();
     }
   });
 

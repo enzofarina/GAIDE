@@ -275,11 +275,16 @@
 
 ## Task 14 — Manual verification on a physical iPhone
 
-**Status:** pending
+**Status:** in-progress — first pass found 2 real bugs, both fixed below; needs a re-test on-device
 
 **Files:** —
 
-**Description:** Using the `verifier` skill, exercise the running app — from the live GitHub Pages URL — on an actual iPhone: add to Home Screen via Safari, confirm full-screen standalone launch with content clear of the notch/home indicator, enable Airplane Mode, and confirm create/mark-done/change-urgency/swipe-to-delete/description-expand all still work.
+**Description:** Exercised the deployed app on an actual iPhone (via the live GitHub Pages URL) by the user directly, not the `verifier` skill — that skill drives a browser via Playwright MCP, which can't control a physical device's Safari, Add-to-Home-Screen flow, or Airplane Mode. Add to Home Screen via Safari, confirm full-screen standalone launch, enable Airplane Mode, confirm create/mark-done/change-urgency/swipe-to-delete/description-expand all work.
+
+**Bugs found on first pass, fixed in `src/todo-app/app.js`/`style.css` (not part of Tasks 1–13's original scope — found only by exercising the real app on the real device):**
+- **Swipe-revealed delete control could never be hidden again** — `attachSwipeToDelete`'s `touchmove` handler only ever checked "does it already exist?" and no-opped forever once revealed. Fixed to continuously sync to the current drag: swiping back right past the threshold within the same gesture hides it again, and a plain tap elsewhere on the row also dismisses it. Two new tests added to `interactions.test.js` covering both.
+- **Task text rendered as a vertical column of single characters when the row was compressed** (swiping, or a description showing) — `.task` had no `flex-wrap`, so `.description`'s `flex-basis: 100%` couldn't actually drop to a new line; instead it fought `.task-text` for space in one line, and `.task-text`'s default flex `min-width: auto` floor plus `word-break: break-word` rendered the squeeze as one character per line. Fixed with `flex-wrap: wrap` on `.task`, `min-width: 0` on `.task-text`, and `flex-shrink: 0` on `.delete-control` so it holds its size instead of participating in the squeeze. This is a pure CSS/visual fix — not something the DOM-structure-only test suite could have caught, hence why it only surfaced here.
+- Bumped `service-worker.js`'s `CACHE_NAME` to `todo-v2` per the standing rule in Task 12/`plan.md`, since both fixes touch cached files.
 
 **Done when:**
 - [ ] All Sprint Contract items in `plan.md` are checked on-device, against the live URL
