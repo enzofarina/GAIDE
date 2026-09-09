@@ -10,7 +10,7 @@ The user wants a simple personal task list they can open and use on their iPhone
 
 ## Expected behavior
 
-The application lets a single user create tasks, view them in a list, mark them as done or not done, delete them, and assign each an urgency level (red = urgent, yellow = medium, green = chill). The list is sorted by urgency, red first. A task may optionally have a longer description, collapsed by default and revealed by tapping the task. Tasks are stored on the device itself (browser storage) — there is no login and no server.
+The application lets a single user create tasks, view them in a list, mark them as done or not done, delete them, and assign each an urgency level (red = urgent, yellow = medium, green = chill, the default). The list is sorted by urgency, red first. A task may optionally have a longer description, collapsed by default and revealed by tapping the task. Tasks are stored on the device itself (browser storage) — there is no login and no server.
 
 ### Use cases
 
@@ -53,7 +53,7 @@ The application lets a single user create tasks, view them in a list, mark them 
 
    - Given: the user is creating a new task
    - When: the user picks an urgency (red/yellow/green), or picks none
-   - Then: the task is created with that urgency, or with yellow (medium) if none was picked
+   - Then: the task is created with that urgency, or with green (chill) if none was picked
 9. **Alternative case — change urgency later**
 
    - Given: a task exists with some urgency level
@@ -100,7 +100,7 @@ The application lets a single user create tasks, view them in a list, mark them 
 - [ ] A deleted task does not reappear after reloading the app (removed from on-device storage, not just hidden)
 - [ ] Deleting a task requires swiping it to reveal a delete control first — a single tap alone never deletes a task
 - [ ] User can assign a task one of three urgency levels — red (urgent), yellow (medium), green (chill) — when creating it
-- [ ] A task created without an explicit urgency defaults to yellow (medium)
+- [ ] A task created without an explicit urgency defaults to green (chill)
 - [ ] User can change a task's urgency at any time after creation
 - [ ] Each urgency level is shown with a clearly distinct color (red/yellow/green)
 - [ ] Each urgency level is also shown with a distinct icon, so urgency is never conveyed by color alone

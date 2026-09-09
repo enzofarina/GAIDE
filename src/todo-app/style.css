@@ -89,6 +89,7 @@ h1 {
 
 .task {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
@@ -141,8 +142,13 @@ h1 {
 }
 
 .task-text {
-  flex: 1;
-  word-break: break-word;
+  flex: 1 1 auto;
+  /* Flex items default to min-width: auto, which floors shrinking at the
+     text's unwrapped intrinsic width — combined with word-break that made
+     a squeezed row render the text one character per line. min-width: 0
+     lets it actually shrink and wrap normally instead. */
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .task.done .task-text {
@@ -152,10 +158,13 @@ h1 {
 
 .description {
   flex-basis: 100%;
+  width: 100%;
   padding: 0.5rem 0 0 var(--touch-target);
   color: #555;
 }
 
 .delete-control {
+  flex-shrink: 0;
+  margin-left: auto;
   background: var(--color-red);
 }

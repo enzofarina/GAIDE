@@ -111,14 +111,14 @@
 
 **Files:** `src/todo-app/app.js`, `tests/todo-app/helpers/load-app.js` (bugfix — see note), `tests/todo-app/rendering.test.js`, `tests/todo-app/security.test.js`, `tests/todo-app/persistence.test.js` (bugfix — see note)
 
-**Description:** Wire form submission: required text (reject empty/whitespace), optional description, urgency picker defaulting to yellow if unset. On submit, add via the data layer and re-render.
+**Description:** Wire form submission: required text (reject empty/whitespace), optional description, urgency picker defaulting to green/chill if unset. On submit, add via the data layer and re-render.
 
 **Note — second Task 2 test bug found and fixed:** every test that submitted the form used `form.requestSubmit()`, which jsdom also leaves unimplemented — like the module-script gap from Task 5, it logs a warning and never actually fires the `submit` event. Fixed by adding a `submitForm(form)` helper to `load-app.js` that dispatches a real `submit` event directly (`form.dispatchEvent(new Event('submit', {...}))`), and updated the 4 call sites across the 3 test files to use it.
 
 **Done when:**
 - [x] Submitting text creates a not-done task
 - [x] Empty/whitespace-only text creates nothing
-- [x] No urgency picked → task defaults to yellow
+- [x] No urgency picked → task defaults to green (chill) — changed from the original yellow default per user feedback after Task 14's on-device pass
 - [x] Description field is optional
 
 **Estimate:** ~30 min
@@ -275,11 +275,16 @@
 
 ## Task 14 — Manual verification on a physical iPhone
 
-**Status:** pending
+**Status:** in-progress — first pass found 2 real bugs, both fixed below; needs a re-test on-device
 
 **Files:** —
 
-**Description:** Using the `verifier` skill, exercise the running app — from the live GitHub Pages URL — on an actual iPhone: add to Home Screen via Safari, confirm full-screen standalone launch with content clear of the notch/home indicator, enable Airplane Mode, and confirm create/mark-done/change-urgency/swipe-to-delete/description-expand all still work.
+**Description:** Exercised the deployed app on an actual iPhone (via the live GitHub Pages URL) by the user directly, not the `verifier` skill — that skill drives a browser via Playwright MCP, which can't control a physical device's Safari, Add-to-Home-Screen flow, or Airplane Mode. Add to Home Screen via Safari, confirm full-screen standalone launch, enable Airplane Mode, confirm create/mark-done/change-urgency/swipe-to-delete/description-expand all work.
+
+**Bugs found on first pass, fixed in `src/todo-app/app.js`/`style.css` (not part of Tasks 1–13's original scope — found only by exercising the real app on the real device):**
+- **Swipe-revealed delete control could never be hidden again** — `attachSwipeToDelete`'s `touchmove` handler only ever checked "does it already exist?" and no-opped forever once revealed. Fixed to continuously sync to the current drag: swiping back right past the threshold within the same gesture hides it again, and a plain tap elsewhere on the row also dismisses it. Two new tests added to `interactions.test.js` covering both.
+- **Task text rendered as a vertical column of single characters when the row was compressed** (swiping, or a description showing) — `.task` had no `flex-wrap`, so `.description`'s `flex-basis: 100%` couldn't actually drop to a new line; instead it fought `.task-text` for space in one line, and `.task-text`'s default flex `min-width: auto` floor plus `word-break: break-word` rendered the squeeze as one character per line. Fixed with `flex-wrap: wrap` on `.task`, `min-width: 0` on `.task-text`, and `flex-shrink: 0` on `.delete-control` so it holds its size instead of participating in the squeeze. This is a pure CSS/visual fix — not something the DOM-structure-only test suite could have caught, hence why it only surfaced here.
+- Bumped `service-worker.js`'s `CACHE_NAME` to `todo-v2` per the standing rule in Task 12/`plan.md`, since both fixes touch cached files.
 
 **Done when:**
 - [ ] All Sprint Contract items in `plan.md` are checked on-device, against the live URL
@@ -344,7 +349,7 @@
 | C11: deleted task does not reappear after reload | `interactions.test.js`, `persistence.test.js` | Task 8, Task 10 | pending |
 | C12: delete requires swipe-reveal, not a plain tap | `interactions.test.js` | Task 8 | pending |
 | C13: assign urgency (red/yellow/green) at creation | `data-layer.test.js` | Task 6 | pending |
-| C14: default urgency is yellow | `data-layer.test.js` | Task 6 | pending |
+| C14: default urgency is green (chill) | `data-layer.test.js` | Task 6 | pending |
 | C15: change urgency after creation | `data-layer.test.js`, `interactions.test.js` | Task 7 | pending |
 | C16: each urgency shows a distinct color | `rendering.test.js` | Task 5 | pending |
 | C17: each urgency shows a distinct icon (not color alone) | `rendering.test.js` | Task 5 | pending |
