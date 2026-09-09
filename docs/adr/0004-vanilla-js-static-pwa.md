@@ -23,7 +23,7 @@ We will build the TODO app as a static, framework-free web app: plain HTML, CSS,
 ## Consequences
 
 ### Positive
-- Zero install/build step: clone the repo, open `index.html` (or serve the folder), it runs — matches "no Mac/Xcode/Developer account needed" from the spec's Context
+- Zero install/build step: clone the repo, serve the folder (or deploy it, as this app does via GitHub Pages), it runs — matches "no Mac/Xcode/Developer account needed" from the spec's Context. (Opening `index.html` directly from disk mostly works too, but see the `crypto.randomUUID()` secure-context caveat below.)
 - No dependency surface to patch, audit, or go stale (Constitution Principle 6/10 have nothing to act on here)
 - Smallest possible thing that satisfies the spec — no abstraction the app doesn't need yet
 
@@ -31,9 +31,10 @@ We will build the TODO app as a static, framework-free web app: plain HTML, CSS,
 - No component model or reactive state library: rendering logic (list diffing, re-render on state change) is hand-written in `app.js` and must stay disciplined as features grow
 - No built-in dev ergonomics (hot reload, JSX, TypeScript checking) that a modern toolchain would provide
 - If the app grows meaningfully past its current scope, this decision will need revisiting rather than scaling gracefully on its own
+- `app.js` uses `crypto.randomUUID()`, which requires a secure context. Most browsers treat a bare `file://` origin as insecure for this API, so opening `index.html` directly from disk (rather than via HTTPS, e.g. the deployed GitHub Pages URL) can silently fail to create tasks on some browsers — the actual target (Safari via the deployed HTTPS URL) is unaffected, but this qualifies the "just open the file" claim below (code review finding, Task 15)
 
 ### Neutral
-- Deployment is just static file hosting (or none — can run from the filesystem/Safari directly); this simplifies hosting but was not itself a driver of the decision
+- Deployment is just static file hosting; this simplifies hosting but was not itself a driver of the decision
 
 ## Constitution adherence
 

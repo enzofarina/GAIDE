@@ -85,14 +85,13 @@ function updateTask(doc, storage, id, updater) {
   return tasks;
 }
 
-function renderTaskRow(doc, storage, task) {
-  const row = doc.createElement('li');
-  row.dataset.testid = 'task';
-  row.dataset.taskId = task.id;
-  row.className = `task urgency-${task.urgency}${task.done ? ' done' : ''}`;
+// One small builder per concern (code review finding, Task 15 — this used
+// to be one large function). Each returns the element it builds and wires
+// its own listeners; renderTaskRow just assembles them.
 
-  const doneWrap = doc.createElement('span');
-  doneWrap.className = 'task-done';
+function buildDoneCheckbox(doc, storage, task, row) {
+  const wrap = doc.createElement('span');
+  wrap.className = 'task-done';
   const checkbox = doc.createElement('input');
   checkbox.type = 'checkbox';
   checkbox.checked = task.done;
@@ -104,59 +103,67 @@ function renderTaskRow(doc, storage, task) {
     updateTask(doc, storage, task.id, toggleDone);
     row.classList.toggle('done', checkbox.checked);
   });
-  doneWrap.appendChild(checkbox);
-  row.appendChild(doneWrap);
+  wrap.appendChild(checkbox);
+  return wrap;
+}
 
+function buildUrgencyIcon(doc, task) {
   const icon = doc.createElement('span');
   icon.className = 'urgency-icon';
   icon.setAttribute('aria-hidden', 'true');
-  icon.textContent = URGENCY_ICON[task.urgency] ?? URGENCY_ICON.yellow;
-  row.appendChild(icon);
+  icon.textContent = URGENCY_ICON[task.urgency] ?? URGENCY_ICON.green;
+  return icon;
+}
 
-  const urgencyPicker = doc.createElement('select');
-  urgencyPicker.className = 'urgency-picker';
-  urgencyPicker.dataset.testid = 'urgency-picker';
-  urgencyPicker.setAttribute('aria-label', 'Change urgency');
+function buildUrgencyPicker(doc, storage, task) {
+  const picker = doc.createElement('select');
+  picker.className = 'urgency-picker';
+  picker.dataset.testid = 'urgency-picker';
+  picker.setAttribute('aria-label', 'Change urgency');
   for (const level of ['red', 'yellow', 'green']) {
     const option = doc.createElement('option');
     option.value = level;
     option.textContent = URGENCY_LABEL[level];
-    urgencyPicker.appendChild(option);
+    picker.appendChild(option);
   }
-  urgencyPicker.value = task.urgency;
+  picker.value = task.urgency;
   // Urgency changes sort position, so this goes through a full re-render
   // (unlike the done-toggle above); interactions.test.js re-queries the DOM
   // afterwards rather than holding a stale row reference across this one.
-  urgencyPicker.addEventListener('change', () => {
-    const tasks = updateTask(doc, storage, task.id, (t) => setUrgency(t, urgencyPicker.value));
+  picker.addEventListener('change', () => {
+    const tasks = updateTask(doc, storage, task.id, (t) => setUrgency(t, picker.value));
     renderTaskList(doc, storage, tasks);
   });
-  row.appendChild(urgencyPicker);
+  return picker;
+}
 
+function buildTaskText(doc, task) {
   const text = doc.createElement('span');
   text.className = 'task-text';
   text.textContent = task.text;
-  row.appendChild(text);
+  return text;
+}
 
-  // Absent entirely (not just hidden) when there's no description, so a
-  // plain task never renders a dead expand control (C25).
-  if (task.description) {
-    const description = doc.createElement('div');
-    description.className = 'description';
-    description.dataset.testid = 'description';
-    description.hidden = true;
-    description.textContent = task.description;
-    row.appendChild(description);
-  }
+// Returns null (not an element) when there's no description, so a plain
+// task never renders a dead expand control (C25) — renderTaskRow only
+// appends it when non-null.
+function buildDescription(doc, task) {
+  if (!task.description) return null;
+  const description = doc.createElement('div');
+  description.className = 'description';
+  description.dataset.testid = 'description';
+  description.hidden = true;
+  description.textContent = task.description;
+  return description;
+}
 
-  attachSwipeToDelete(doc, storage, task, row);
-
-  // Ignore clicks that originate on an interactive control (checkbox,
-  // urgency picker, delete button) — only a tap on the row's own surface
-  // toggles the description. A task without one has nothing to toggle.
-  // If the delete control is currently revealed, a tap elsewhere on the
-  // row dismisses it instead of also toggling the description — otherwise
-  // there'd be no way to put it away short of a full reverse swipe.
+// Ignore clicks that originate on an interactive control (checkbox, urgency
+// picker, delete button) — only a tap on the row's own surface toggles the
+// description. A task without one has nothing to toggle. If the delete
+// control is currently revealed, a tap elsewhere on the row dismisses it
+// instead of also toggling the description — otherwise there'd be no way
+// to put it away short of a full reverse swipe.
+function attachRowClickHandler(row) {
   row.addEventListener('click', (event) => {
     if (event.target.closest('input, select, button')) return;
 
@@ -170,6 +177,24 @@ function renderTaskRow(doc, storage, task) {
     if (!description) return;
     description.hidden = !description.hidden;
   });
+}
+
+function renderTaskRow(doc, storage, task) {
+  const row = doc.createElement('li');
+  row.dataset.testid = 'task';
+  row.dataset.taskId = task.id;
+  row.className = `task urgency-${task.urgency}${task.done ? ' done' : ''}`;
+
+  row.appendChild(buildDoneCheckbox(doc, storage, task, row));
+  row.appendChild(buildUrgencyIcon(doc, task));
+  row.appendChild(buildUrgencyPicker(doc, storage, task));
+  row.appendChild(buildTaskText(doc, task));
+
+  const description = buildDescription(doc, task);
+  if (description) row.appendChild(description);
+
+  attachSwipeToDelete(doc, storage, task, row);
+  attachRowClickHandler(row);
 
   return row;
 }
