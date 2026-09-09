@@ -37,12 +37,15 @@ Each step has a **human gate**: no one — not even the agent — skips a step w
 ## How to start a new feature
 
 ### Option 1 — Using the spec-writer skill (recommended)
+
 ```
 /spec-writer I want to add: <natural-language description>
 ```
+
 The skill drives the full flow.
 
 ### Option 2 — Manually
+
 1. `cp -r template/ <new-feature-slug>/`
 2. Edit `spec.md` (fill in the marked sections)
 3. Request human review
