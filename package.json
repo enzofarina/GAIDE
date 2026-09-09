@@ -1,0 +1,12 @@
+{
+  "name": "gaide",
+  "private": true,
+  "type": "module",
+  "description": "Test tooling for feature apps built in src/ (each app itself stays dependency-free; see docs/adr/0004-vanilla-js-static-pwa.md).",
+  "scripts": {
+    "test:todo-app": "node --test tests/todo-app/"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}
