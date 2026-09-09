@@ -1,0 +1,161 @@
+:root {
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-border: #e0e0e0;
+  --color-red: #d64545;
+  --color-yellow: #d6a72e;
+  --color-green: #3f9142;
+  --color-error-bg: #fdecec;
+  --color-error-text: #9c1c1c;
+  --touch-target: 44px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* viewport-fit=cover (see index.html) lets content sit under the notch/home
+     indicator unless we push it back out with safe-area padding. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.app {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+.storage-error {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-error-text);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.new-task-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.new-task-form input[type="text"],
+.new-task-form select,
+.new-task-form button,
+.task select,
+.task button {
+  /* 16px+ stops iOS Safari auto-zooming the page when the field is focused. */
+  font-size: 16px;
+  min-height: var(--touch-target);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0 0.75rem;
+}
+
+.new-task-form input[type="text"] {
+  flex: 1 1 12rem;
+}
+
+.new-task-form button,
+.task button {
+  min-width: var(--touch-target);
+  background: var(--color-text);
+  color: var(--color-bg);
+  border: none;
+  cursor: pointer;
+}
+
+.task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-left: 0.35rem solid var(--color-border);
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+.task.urgency-red {
+  border-left-color: var(--color-red);
+}
+
+.task.urgency-yellow {
+  border-left-color: var(--color-yellow);
+}
+
+.task.urgency-green {
+  border-left-color: var(--color-green);
+}
+
+.task-done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+}
+
+.task-done input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.urgency-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.task.urgency-red .urgency-icon {
+  color: var(--color-red);
+}
+
+.task.urgency-yellow .urgency-icon {
+  color: var(--color-yellow);
+}
+
+.task.urgency-green .urgency-icon {
+  color: var(--color-green);
+}
+
+.task-text {
+  flex: 1;
+  word-break: break-word;
+}
+
+.task.done .task-text {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.description {
+  flex-basis: 100%;
+  padding: 0.5rem 0 0 var(--touch-target);
+  color: #555;
+}
+
+.delete-control {
+  background: var(--color-red);
+}
