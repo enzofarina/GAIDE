@@ -54,7 +54,7 @@ Esta é a parte para saber de cor — e a que mais exige vocabulário. Se algum 
 
 ### O cenário
 
-O agente tenta escrever um arquivo contendo `AKIA1234567890ABCDEF`. E como o Git guarda todo o histórico, apagar a chave num commit posterior não resolve — ela continua recuperável para sempre. Por isso este portão age **antes** do dano, não depois.
+O agente tenta escrever um arquivo contendo uma credencial da AWS (uma chave de acesso — o formato começa com o prefixo `AKIA` seguido de 16 caracteres alfanuméricos). E como o Git guarda todo o histórico, apagar a chave num commit posterior não resolve — ela continua recuperável para sempre. Por isso este portão age **antes** do dano, não depois.
 
 ```
 Agente pede: Write
