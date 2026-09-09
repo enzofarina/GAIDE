@@ -1,7 +1,7 @@
 // Bump this on every change to index.html, style.css, or app.js — activate()
 // below deletes any cache that isn't this name, which is how an
 // already-installed phone actually picks up a new version (plan.md).
-const CACHE_NAME = 'todo-v2';
+const CACHE_NAME = 'todo-v3';
 
 const SHELL_FILES = [
   './',

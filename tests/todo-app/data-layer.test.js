@@ -37,10 +37,10 @@ describe('C13: urgency can be assigned at creation', () => {
   });
 });
 
-describe('C14: default urgency is yellow', () => {
-  test('no urgency provided defaults to yellow', () => {
+describe('C14: default urgency is green (chill)', () => {
+  test('no urgency provided defaults to green', () => {
     const task = createTask({ text: 'Someday' });
-    assert.equal(task.urgency, 'yellow');
+    assert.equal(task.urgency, 'green');
   });
 });
 

@@ -14,7 +14,7 @@ Implementation (Tasks 3–12) must satisfy this interface for these tests to be 
 - **Storage key:** a single fixed localStorage key, `"gaide-todo-tasks"`, holding a JSON array of task objects.
 - **Task shape:** `{ id, text, description, urgency, done, createdAt }` — `urgency` is one of `"red" | "yellow" | "green"`.
 - **Exported pure functions** (named exports from `app.js`):
-  - `createTask({ text, description, urgency })` → a task object; `urgency` defaults to `"yellow"` when omitted/falsy; `description` defaults to `""`; throws/returns `null` for empty-or-whitespace `text`.
+  - `createTask({ text, description, urgency })` → a task object; `urgency` defaults to `"green"` (chill) when omitted/falsy; `description` defaults to `""`; throws/returns `null` for empty-or-whitespace `text`.
   - `sortTasks(tasks)` → new array, urgency rank (red → yellow → green) then stable creation order within a tie. Must use native `Array.prototype.sort` (per `plan.md`).
   - `toggleDone(task)` → new task with `done` flipped.
   - `setUrgency(task, urgency)` → new task with `urgency` changed.

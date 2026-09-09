@@ -7,7 +7,7 @@ export const STORAGE_KEY = 'gaide-todo-tasks';
 
 const URGENCY_RANK = { red: 0, yellow: 1, green: 2 };
 
-export function createTask({ text, description = '', urgency = 'yellow' } = {}) {
+export function createTask({ text, description = '', urgency = 'green' } = {}) {
   const trimmedText = typeof text === 'string' ? text.trim() : '';
   if (!trimmedText) return null;
 
@@ -15,7 +15,7 @@ export function createTask({ text, description = '', urgency = 'yellow' } = {}) 
     id: crypto.randomUUID(),
     text: trimmedText,
     description,
-    urgency: urgency || 'yellow',
+    urgency: urgency || 'green',
     done: false,
     createdAt: Date.now(),
   };
@@ -75,7 +75,9 @@ function persistTasks(doc, storage, tasks) {
 // Shapes, not just color, distinguish urgency (colorblind-accessible per the
 // spec review); CSS layers color on top via .urgency-{level} on the row.
 const URGENCY_ICON = { red: '▲', yellow: '■', green: '●' };
-const URGENCY_LABEL = { red: 'Red — urgent', yellow: 'Yellow — medium', green: 'Green — chill' };
+// No color name in the label — the color/icon already shows it visually,
+// repeating it in text would be redundant.
+const URGENCY_LABEL = { red: 'Urgent', yellow: 'Medium', green: 'Chill' };
 
 function updateTask(doc, storage, id, updater) {
   const tasks = loadTasks(storage).map((t) => (t.id === id ? updater(t) : t));

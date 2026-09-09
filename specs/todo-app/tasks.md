@@ -111,14 +111,14 @@
 
 **Files:** `src/todo-app/app.js`, `tests/todo-app/helpers/load-app.js` (bugfix — see note), `tests/todo-app/rendering.test.js`, `tests/todo-app/security.test.js`, `tests/todo-app/persistence.test.js` (bugfix — see note)
 
-**Description:** Wire form submission: required text (reject empty/whitespace), optional description, urgency picker defaulting to yellow if unset. On submit, add via the data layer and re-render.
+**Description:** Wire form submission: required text (reject empty/whitespace), optional description, urgency picker defaulting to green/chill if unset. On submit, add via the data layer and re-render.
 
 **Note — second Task 2 test bug found and fixed:** every test that submitted the form used `form.requestSubmit()`, which jsdom also leaves unimplemented — like the module-script gap from Task 5, it logs a warning and never actually fires the `submit` event. Fixed by adding a `submitForm(form)` helper to `load-app.js` that dispatches a real `submit` event directly (`form.dispatchEvent(new Event('submit', {...}))`), and updated the 4 call sites across the 3 test files to use it.
 
 **Done when:**
 - [x] Submitting text creates a not-done task
 - [x] Empty/whitespace-only text creates nothing
-- [x] No urgency picked → task defaults to yellow
+- [x] No urgency picked → task defaults to green (chill) — changed from the original yellow default per user feedback after Task 14's on-device pass
 - [x] Description field is optional
 
 **Estimate:** ~30 min
@@ -349,7 +349,7 @@
 | C11: deleted task does not reappear after reload | `interactions.test.js`, `persistence.test.js` | Task 8, Task 10 | pending |
 | C12: delete requires swipe-reveal, not a plain tap | `interactions.test.js` | Task 8 | pending |
 | C13: assign urgency (red/yellow/green) at creation | `data-layer.test.js` | Task 6 | pending |
-| C14: default urgency is yellow | `data-layer.test.js` | Task 6 | pending |
+| C14: default urgency is green (chill) | `data-layer.test.js` | Task 6 | pending |
 | C15: change urgency after creation | `data-layer.test.js`, `interactions.test.js` | Task 7 | pending |
 | C16: each urgency shows a distinct color | `rendering.test.js` | Task 5 | pending |
 | C17: each urgency shows a distinct icon (not color alone) | `rendering.test.js` | Task 5 | pending |

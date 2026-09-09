@@ -32,7 +32,7 @@
 3. **Data layer** — task model, localStorage read/write/CRUD, urgency-then-creation-order sort, storage-failure handling
 4. **App shell & styles** — layout, iOS safe-area insets (`viewport-fit=cover` + `env(safe-area-inset-*)`), 16px+ form inputs (avoids iOS auto-zoom), 44×44pt minimum touch targets
 5. **Rendering** — list rendering: urgency color + icon, done/not-done state, collapsed/expanded description
-6. **Create form** — text input (required), description input (optional), urgency picker (defaults to yellow)
+6. **Create form** — text input (required), description input (optional), urgency picker (defaults to green/chill)
 7. **Interactions** — mark done/undone, change urgency — each wired to the data layer + re-render
 8. **Swipe-to-delete** — swipe-left gesture reveals a delete control; tapping it deletes; guards against accidental single-tap deletion
 9. **Expand/collapse** — description toggle
@@ -43,7 +43,7 @@
 ## Testing strategy
 
 - **Unit:** data-layer functions in isolation — add/delete/toggle-done/set-urgency/sort comparator, storage-failure path
-- **DOM/integration:** create → appears not-done and yellow by default; mark/unmark done → visual + storage state; delete → removed from DOM and storage; expand/collapse toggles description visibility; changing urgency re-sorts the list
+- **DOM/integration:** create → appears not-done and green by default; mark/unmark done → visual + storage state; delete → removed from DOM and storage; expand/collapse toggles description visibility; changing urgency re-sorts the list
 - **Persistence:** simulate a reload (re-read from localStorage into a fresh render) and confirm tasks, urgency, done-state, and descriptions all match
 - **Security:** create a task with `<script>` tags in title and description, assert it renders as literal text and never executes
 - **Manual (device):** install to iPhone Home Screen via Safari from the live GitHub Pages URL; confirm full-screen launch with no browser chrome, content not obscured by the notch or home indicator, urgency icons visible, swipe-to-delete works; open in Airplane Mode after first load
@@ -60,7 +60,7 @@
 
 > Agreed before implementation; the reviewer checks each item one by one.
 
-- [ ] Add a task with text only → appears in the list, not done, yellow (default urgency) — verify by: open the app, add a task, inspect it
+- [ ] Add a task with text only → appears in the list, not done, green (default urgency) — verify by: open the app, add a task, inspect it
 - [ ] Add a task with urgency=red and a description → appears above existing yellow/green tasks, description hidden — verify by: add it, check its position and that no description text is visible
 - [ ] Tap a task with a description → expands; tap again → collapses — verify by: manual tap test
 - [ ] Mark a task done, then unmark it → visual state toggles both ways — verify by: manual test
