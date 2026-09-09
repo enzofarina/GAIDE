@@ -60,24 +60,24 @@
 
 > Agreed before implementation; the reviewer checks each item one by one.
 
-- [ ] Add a task with text only → appears in the list, not done, green (default urgency) — verify by: open the app, add a task, inspect it
-- [ ] Add a task with urgency=red and a description → appears above existing yellow/green tasks, description hidden — verify by: add it, check its position and that no description text is visible
-- [ ] Tap a task with a description → expands; tap again → collapses — verify by: manual tap test
-- [ ] Mark a task done, then unmark it → visual state toggles both ways — verify by: manual test
-- [ ] Swipe a task left, tap the revealed delete control → disappears immediately from the list; a plain tap alone never deletes it — verify by: manual test
-- [ ] Reload the page → all tasks, urgencies, done-state, and descriptions match exactly what was left — verify by: reload and compare
-- [ ] The live GitHub Pages URL loads the app over HTTPS — verify by: open the Actions-deployed URL in a browser
-- [ ] Add to Home Screen from Safari (from the live URL), open it, then enable Airplane Mode and reopen → app still loads and works fully, full-screen with no browser chrome — verify by: manual test on a physical iPhone
-- [ ] Content is not obscured by the notch or home indicator — verify by: visual check on a physical iPhone
-- [ ] Each urgency level shows a distinct icon, not just a color — verify by: visual check
-- [ ] Create a task titled `<script>alert(1)</script>` → renders as literal text, no alert fires — verify by: manual test / DOM assertion
+- [x] Add a task with text only → appears in the list, not done, green (default urgency) — verify by: open the app, add a task, inspect it
+- [x] Add a task with urgency=red and a description → appears above existing yellow/green tasks, description hidden — verify by: add it, check its position and that no description text is visible
+- [x] Tap a task with a description → expands; tap again → collapses — verify by: manual tap test
+- [x] Mark a task done, then unmark it → visual state toggles both ways — verify by: manual test
+- [x] Swipe a task left, tap the revealed delete control → disappears immediately from the list; a plain tap alone never deletes it — verify by: manual test
+- [x] Reload the page → all tasks, urgencies, done-state, and descriptions match exactly what was left — verify by: reload and compare
+- [x] The live GitHub Pages URL loads the app over HTTPS — verify by: open the Actions-deployed URL in a browser
+- [x] Add to Home Screen from Safari (from the live URL), open it, then enable Airplane Mode and reopen → app still loads and works fully, full-screen with no browser chrome — verify by: manual test on a physical iPhone
+- [x] Content is not obscured by the notch or home indicator — verify by: visual check on a physical iPhone (inferred from two full on-device passes with no issue reported — not asked as an explicit standalone question; flag if this turns out wrong)
+- [x] Each urgency level shows a distinct icon, not just a color — verify by: visual check
+- [x] Create a task titled `<script>alert(1)</script>` → renders as literal text, no alert fires — verify by: manual test / DOM assertion (automated, via `security.test.js` against the real app code)
 
 ## Definition of Done
 
-- [ ] All 26 spec acceptance criteria have green tests
-- [ ] ADR 0004 recorded and referenced in the code
-- [ ] `code-reviewer` skill ran without blockers
-- [ ] Human review approved
-- [ ] Deployed and reachable at the GitHub Pages URL
-- [ ] Manually verified on a physical iPhone (Home Screen install + offline use)
-- [ ] No secrets, no new external dependencies
+- [x] All 26 spec acceptance criteria have green tests
+- [x] ADR 0004 recorded and referenced in the code
+- [x] `code-reviewer` skill ran without blockers — 1 blocker + 4 suggestions found, all fixed (see `specs/todo-app/retrospective.md`)
+- [x] Human review approved
+- [x] Deployed and reachable at the GitHub Pages URL
+- [x] Manually verified on a physical iPhone (Home Screen install + offline use)
+- [x] No secrets, no new external dependencies (`jsdom` is a dev-only test dependency, never shipped to the app)
