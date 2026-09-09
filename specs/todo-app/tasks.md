@@ -300,15 +300,21 @@
 
 ## Task 15 — Code review
 
-**Status:** pending
+**Status:** done
 
 **Files:** —
 
-**Description:** Run the `code-reviewer` skill over the full diff. Address any blockers.
+**Description:** Ran the `code-reviewer` skill (clean-context subagent) over `git diff 3b42f4d..origin/main`. Found 1 blocker and 4 suggestions; all 5 addressed in 5 dedicated commits (`6a86a6e`, `ae85328`, `278c416`, `b12386e`, `179fc0b`):
+
+1. **Blocker (Constitution Principle 10):** `security.test.js`'s two `nosemgrep` suppressions weren't in a dedicated commit — they shipped inside `a297e98`. Fixed going forward with `179fc0b` rather than rewriting already-merged `main` history.
+2. **Suggestion:** no CI job ran the test suite — added `.github/workflows/test.yml` (`6a86a6e`).
+3. **Suggestion:** ADR 0004 overstated the "just open index.html" claim given `crypto.randomUUID()`'s secure-context requirement — corrected (`ae85328`).
+4. **Suggestion:** Task 5's done-when had an already-passing item left unchecked — fixed (`278c416`).
+5. **Suggestion:** `renderTaskRow` did five concerns in one function — split into builder functions, no behavior change (`b12386e`).
 
 **Done when:**
-- [ ] No remaining blockers
-- [ ] Suggestions assessed (accepted or justified)
+- [x] No remaining blockers
+- [x] Suggestions assessed (accepted or justified) — all 4 accepted and fixed
 
 **Estimate:** ~30 min
 
