@@ -56,8 +56,37 @@ Enquanto o problema #1 (commits não-atômicos) estava sendo corrigido, o commit
 
 Ao criar o `test.yml`, um SHA para `actions/setup-node@v4` foi escrito de memória, sem verificação — poderia ser um SHA inexistente ou, pior, válido mas apontando para a versão errada. Foi corrigido antes de commitar, mas só porque houve uma autocobrança explícita ("deixa eu verificar") no momento, não porque existe uma checagem automática que impede esse tipo de erro.
 
+## 7. Warning de depreciação do Node.js 20 no `actions/checkout`
+
+- **Onde:** SHA fixado para `actions/checkout` (`34e11487...`) em `security.yml` (4 usos) e reaproduzido em `test.yml` e `deploy-pages.yml` (mais 2 usos).
+- **O que era:** esse commit específico da action é uma versão antiga da `v4` que roda internamente em Node.js 20 — runtime que o GitHub está aposentando nos runners do Actions. O GitHub força a execução em Node 24 mesmo assim, mas emite um warning a cada run.
+- **Por que não foi notado:** os 4 usos em `security.yml` já existiam antes da minha sessão (pré-existente). Mas eu **reaproveitei esse mesmo SHA desatualizado** nos meus 2 arquivos novos por "consistência com a convenção já usada no repositório" — sem verificar se ainda era a versão mais atual, ao contrário do que fiz corretamente para as outras actions (configure-pages, upload-pages-artifact, deploy-pages, setup-node), onde consultei a API do GitHub para pegar o SHA vigente de cada uma.
+- **Como foi notificado:** o usuário mandou um print da página de Actions do GitHub mostrando o warning na aba "Annotations" e perguntou o que era. Não foi algo que eu vi ou verifiquei proativamente depois de criar os workflows.
+- **Teria passado sem o usuário?** Sim — eu não tinha nenhum mecanismo de verificação pós-criação que checasse se os SHAs fixados continuavam atuais ao longo do tempo.
+- **Correção:** SHA atualizado para o commit atual da tag `v4` (`11d5960a...`) nos 6 lugares, commit `02a99f0`.
+
+## 8. Falso positivo do semgrep — credencial de exemplo em `anatomia-de-um-harness.md`
+
+- **Onde:** `anatomia-de-um-harness.md`, uma string de exemplo ilustrativo (chave de acesso AWS fake, formato `AKIA` + 16 caracteres alfanuméricos) usada num artigo de documentação.
+- **O que era:** essa string batia exatamente no padrão de detecção de chave de acesso da AWS do semgrep, fazendo o job SAST do `security.yml` falhar em toda execução.
+- **Por que não foi notado antes de eu investigar:** o arquivo já existia desde o commit inicial `3b42f4d` — de antes de qualquer trabalho meu no TODO app. Só foi investigado porque o print de Actions do usuário mostrava o job "Security" falhando repetidamente, e eu decidi rodar o semgrep localmente para diagnosticar em vez de assumir que era relacionado ao meu código.
+- **Como foi notificado:** o usuário perguntou "deu erro na security" mostrando um print da lista de execuções do Actions com vários X vermelhos. Eu investiguei a causa raiz por iniciativa própria depois dessa pergunta, mas só porque a pergunta foi feita — não tinha checado isso antes por conta própria em nenhum momento anterior, mesmo já tendo commitado e feito merge de várias PRs.
+- **Teria passado sem o usuário?** Sim, integralmente — nada no meu fluxo normal me levaria a rodar um scan de segurança no repositório inteiro (fora do escopo do que eu estava editando) sem ser solicitado.
+- **Correção:** reescrita a frase para descrever o formato da credencial em vez de embutir uma string que bate no padrão, commit `7548c6f`.
+
+## 9. Drift de adapters — `.claude/skills/adr-writer/SKILL.md` desatualizado
+
+- **Onde:** arquivo gerado `.claude/skills/adr-writer/SKILL.md`, fora de sincronia com sua fonte `agents/skills/adr-writer.md`.
+- **O que era:** o job "adapters" do `security.yml` roda `scripts/sync-adapters.sh --check`, que compara o arquivo gerado com o que seria gerado a partir da fonte agora — e eles não batiam.
+- **Por que não foi notado:** esse drift também já existia desde o commit inicial `3b42f4d`, antes de qualquer trabalho meu. Eu tinha investigado e confirmado isso via `git log`/`git status` na mesma sessão em que investiguei o item 8 — mas só documentei, não corrigi, até o usuário pedir explicitamente.
+- **Como foi notificado:** o usuário colou diretamente o log de erro do job do GitHub Actions (linha "drift: ... is out of sync ...") e pediu a correção.
+- **Teria passado sem o usuário?** Sim — eu tinha identificado o problema mas só ofereci corrigir "se quisesse", sem tomar a iniciativa de resolver sozinho enquanto não fosse pedido.
+- **Correção:** rodado `scripts/sync-adapters.sh` para regenerar o arquivo, commit `9da1d98`.
+
 ---
 
 ## Conclusão
 
-Os itens 1, 2, 3, 5 e 6 são falhas de **disciplina de processo** do agente — nenhum deles exigia informação que não estava disponível no momento. Os itens do 4 são falhas estruturais do **método de verificação** (jsdom não renderiza visualmente) combinadas, no caso do delete, com uma **decisão de produto não comunicada**. Vale cobrar os primeiros como responsabilidade direta; os segundos apontam para a necessidade de, em builds futuras, incluir alguma forma de inspeção visual real (screenshot, browser real) antes de declarar uma task de UI como concluída.
+Os itens 1, 2, 3, 5, 6, 7 e 9 são falhas de **disciplina de processo** do agente — nenhum deles exigia informação que não estava disponível no momento. O item 4 é uma falha estrutural do **método de verificação** (jsdom não renderiza visualmente) combinada, no caso do delete, com uma **decisão de produto não comunicada**. O item 8 é o único genuinamente "impossível de prever sem procurar" — um problema pré-existente e sem relação com o trabalho, só encontrado porque foi investigado por iniciativa própria depois de uma pergunta do usuário.
+
+Um padrão que se repete nos itens 7, 8 e 9: em nenhum dos três o agente verificou proativamente, depois de terminar o trabalho "principal", se o resto do repositório (workflows pré-existentes, convenções já usadas, arquivos gerados) continuava consistente. As três correções só aconteceram porque o usuário colou o log de erro/print do CI e perguntou — nenhuma foi encontrada de forma proativa antes disso. Vale cobrar isso como responsabilidade direta; os itens do grupo 4 apontam para a necessidade de, em builds futuras, incluir alguma forma de inspeção visual real (screenshot, browser real) antes de declarar uma task de UI como concluída.
