@@ -97,7 +97,7 @@
 **Done when:**
 - [x] List renders in urgency order (red, yellow, green)
 - [x] Each task shows its urgency color AND a distinct icon
-- [ ] Descriptions are not visible until expanded
+- [x] Descriptions are not visible until expanded — already verified passing by `rendering.test.js`'s C22 case; left unchecked until the code review (Task 15) caught the inconsistency
 
 **Estimate:** ~35 min
 
@@ -255,17 +255,17 @@
 
 ## Task 13 — Deploy to GitHub Pages
 
-**Status:** file written; not yet run (needs a push to `main` — see note)
+**Status:** done
 
 **Files:** `.github/workflows/deploy-pages.yml` (new)
 
 **Description:** GitHub Actions workflow that publishes `src/todo-app/` to GitHub Pages on push to `main`, giving the app a real HTTPS URL (required for the service worker and reliable installability). Triggers on pushes touching `src/todo-app/**` or the workflow file itself, plus manual `workflow_dispatch`. Single job (checkout → configure-pages → upload-pages-artifact → deploy-pages), `pages: write` + `id-token: write` at the workflow level — matches GitHub's own standard Pages-via-Actions template rather than a build/deploy split, since splitting would have put `configure-pages` (which needs write access to auto-enable Pages on a repo where it's never been turned on) in a job that only had read access. Actions pinned to commit SHAs, matching this repo's existing convention in `security.yml`.
 
-**Not done yet — needs your call, not mine:** actually running this requires pushing/merging to `main` (we're on `minhas-notas`), which is a shared-state action I won't take without your say-so. If GitHub Pages has never been enabled on this repo before, the very first run might also need a one-time manual step: Settings → Pages → Build and deployment → Source: "GitHub Actions" (recent GitHub versions often auto-provision this from the workflow itself, but it can still require that manual flip on some repos/orgs).
+**Note:** the very first run failed because GitHub Pages was never enabled on this repo (Settings → Pages was set to "Deploy from a branch" / disabled) — a one-time manual step the workflow itself can't do. The user switched Source to "GitHub Actions" and re-ran it manually; it has succeeded automatically on every push to `main` since (PR #2's merge triggered it with no manual re-run needed).
 
 **Done when:**
-- [ ] Workflow runs successfully on push to `main`
-- [ ] The published URL serves the app over HTTPS and loads correctly in a browser
+- [x] Workflow runs successfully on push to `main`
+- [x] The published URL serves the app over HTTPS and loads correctly in a browser
 
 **Estimate:** ~30 min
 
@@ -275,20 +275,22 @@
 
 ## Task 14 — Manual verification on a physical iPhone
 
-**Status:** in-progress — first pass found 2 real bugs, both fixed below; needs a re-test on-device
+**Status:** done
 
 **Files:** —
 
 **Description:** Exercised the deployed app on an actual iPhone (via the live GitHub Pages URL) by the user directly, not the `verifier` skill — that skill drives a browser via Playwright MCP, which can't control a physical device's Safari, Add-to-Home-Screen flow, or Airplane Mode. Add to Home Screen via Safari, confirm full-screen standalone launch, enable Airplane Mode, confirm create/mark-done/change-urgency/swipe-to-delete/description-expand all work.
 
-**Bugs found on first pass, fixed in `src/todo-app/app.js`/`style.css` (not part of Tasks 1–13's original scope — found only by exercising the real app on the real device):**
+**First pass found 2 real bugs**, fixed in `src/todo-app/app.js`/`style.css` (not part of Tasks 1–13's original scope — found only by exercising the real app on the real device):
 - **Swipe-revealed delete control could never be hidden again** — `attachSwipeToDelete`'s `touchmove` handler only ever checked "does it already exist?" and no-opped forever once revealed. Fixed to continuously sync to the current drag: swiping back right past the threshold within the same gesture hides it again, and a plain tap elsewhere on the row also dismisses it. Two new tests added to `interactions.test.js` covering both.
 - **Task text rendered as a vertical column of single characters when the row was compressed** (swiping, or a description showing) — `.task` had no `flex-wrap`, so `.description`'s `flex-basis: 100%` couldn't actually drop to a new line; instead it fought `.task-text` for space in one line, and `.task-text`'s default flex `min-width: auto` floor plus `word-break: break-word` rendered the squeeze as one character per line. Fixed with `flex-wrap: wrap` on `.task`, `min-width: 0` on `.task-text`, and `flex-shrink: 0` on `.delete-control` so it holds its size instead of participating in the squeeze. This is a pure CSS/visual fix — not something the DOM-structure-only test suite could have caught, hence why it only surfaced here.
-- Bumped `service-worker.js`'s `CACHE_NAME` to `todo-v2` per the standing rule in Task 12/`plan.md`, since both fixes touch cached files.
+- Bumped `service-worker.js`'s `CACHE_NAME` (v1 → v2 → v3, the latter also covering the default-urgency/label change) per the standing rule in Task 12/`plan.md`, since these fixes touch cached files.
+
+**Second pass, after both fixes + the default-urgency/label change deployed:** confirmed working by the user on-device.
 
 **Done when:**
-- [ ] All Sprint Contract items in `plan.md` are checked on-device, against the live URL
-- [ ] Offline behavior after first load is confirmed on the physical device, not just DevTools
+- [x] All Sprint Contract items in `plan.md` are checked on-device, against the live URL
+- [x] Offline behavior after first load is confirmed on the physical device, not just DevTools
 
 **Estimate:** ~25 min
 
