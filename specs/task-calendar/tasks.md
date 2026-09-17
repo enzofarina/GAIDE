@@ -508,10 +508,10 @@
 
 **Files:** `specs/task-calendar/tasks.md` (traceability table → `verified`), `specs/task-calendar/plan.md` (Sprint Contract + Definition of Done → all checked)
 
-**Description:** Confirm all 50 spec criteria are verified and `plan.md`'s Definition of Done is complete, get human approval, then commit.
+**Description:** Confirm all 54 spec criteria (50 original + 4 from Task 25's calendar-formatting amendment) are verified and `plan.md`'s Definition of Done is complete, get human approval, then commit.
 
 **Done when:**
-- [ ] All 50 acceptance criteria verified (traceability table below fully `verified`)
+- [ ] All 54 acceptance criteria verified (traceability table below fully `verified`)
 - [ ] `plan.md`'s Definition of Done is complete
 
 **Estimate:** ~25 min
@@ -519,6 +519,29 @@
 **Depends on:** Task 23
 
 **Evidence:** —
+
+---
+
+## Task 25 — Calendar formatting: weekday header, month alignment, year as 12-month panel
+
+**Status:** done
+
+**Files:** `src/todo-app/calendar.js` (weekday/month label constants, month-view padding, year-view grouped-by-month grid), `src/todo-app/render.js` (weekday header rendering, blank-cell rendering, month-block rendering for year view; also fixed a pre-existing test-isolation bug — `calendarState` is module-level and was leaking view/reference-date across `loadApp()` calls sharing the same module instance within a test file), `src/todo-app/app.js` (calls `setCalendarView('month')` at the top of `initApp` to reset that state on every fresh load), `src/todo-app/index.html` (`calendar-weekday-header` container), `src/todo-app/style.css` (header row, blank-cell, and year-view month-panel styling), `specs/task-calendar/spec.md` (Amendment section + 4 new acceptance criteria, use cases 40-43), `tests/todo-app/README.md` (DOM contract), `tests/todo-app/calendar.test.js` (+6 tests).
+
+**Description:** Requested by the user after the initial build (`specs/task-calendar/spec.md`'s "Amendment (2026-09-17)"): week/month view gained a Mon-Sun weekday header (English, matching the rest of the app's language); month view's day grid is now padded with blank cells so days align under the correct weekday column, like a real calendar; year view was restructured from one flat 365/366-cell grid into a single panel showing all 12 months at once, each labeled Jan-Dec and shown at a much smaller cell size to fit ("bem pequenos para caber," explicit user request — the existing 44px touch-target minimum is deliberately overridden here, flagged for Task 22's on-device pass, not an oversight), with no weekday header inside it. While implementing this, running the full suite surfaced 2 failures traced to a real, pre-existing (not introduced by this task) test-isolation bug: `calendarState` in `render.js` never reset between `loadApp()` calls in the same test file, so a test switching to week/year view leaked that state into every later test in the file — it had gone unnoticed until today's date shift changed which dates fell in/out of the leaked view's window. Fixed by resetting calendar state at the top of every `initApp()` call.
+
+**Done when:**
+- [x] Week and month view show the weekday header (Mon-Sun, English)
+- [x] Month view's days align under the correct weekday column with padding cells at both ends
+- [x] Year view shows all 12 months at once, each labeled and fully interactive, at a compact size
+- [x] Year view shows no weekday header
+- [x] The `calendarState` test-isolation bug is fixed, not just worked around in the affected tests
+
+**Estimate:** ~45 min
+
+**Depends on:** Task 12
+
+**Evidence:** `npm run test:todo-app` — 111/111 pass (105 previous + 6 new calendar.test.js cases). The 2 pre-existing `reminders.test.js` failures caused by the `calendarState` leak are confirmed fixed by this same change. `bash scripts/check-security.sh` clean on all touched files.
 
 ---
 
@@ -576,5 +599,9 @@
 | C48: a reminder never affects any day's heatmap | Task 4, Task 20 | done |
 | C49: a reminder's text renders as plain text | Task 20 | done |
 | C50: a reminder never appears in the Scheduled or general list | Task 9, Task 20 | done |
+| C51: week and month view show a Mon-Sun weekday header | Task 25 | done |
+| C52: month view aligns days to weekday columns, padded | Task 25 | done |
+| C53: year view is a single 12-month panel, labeled, interactive | Task 25 | done |
+| C54: year view shows no weekday header | Task 25 | done |
 
 > Update status as tasks progress, using the same lifecycle (`pending | in-progress | done | verified`). A criterion is `verified` only when exercised against the running application, not just by green unit tests.
