@@ -251,6 +251,30 @@ On the calendar, every view (month, week, year) shows a small colored marker on 
     - When: the user taps the date but not the marker itself
     - Then: the day-detail view opens showing the dated items, as already specified, without showing or affecting the reminder
 
+### Amendment (2026-09-17) — calendar formatting
+
+Requested after the initial build: week and month views were missing weekday context, and year view (a single flat 365/366-cell grid) didn't read as "12 months at a glance." Language for all abbreviations is English, matching the rest of the app's UI (no other part of the app is localized).
+
+40. **Main case — weekday header in week and month view**
+    - Given: the calendar is in week or month view
+    - When: the user views it
+    - Then: a header row shows each weekday's 3-letter English abbreviation (Mon, Tue, Wed, Thu, Fri, Sat, Sun), Monday first
+
+41. **Main case — month view aligns days to weekday columns**
+    - Given: the calendar is in month view
+    - When: the user views it
+    - Then: each day sits under its correct weekday column header (e.g., every date that falls on a Monday appears under "Mon"), with empty cells padding the start and end of the grid so every row is a complete week — like a standard calendar (Google Calendar, iOS Calendar, etc.)
+
+42. **Main case — year view is a single 12-month panel**
+    - Given: the calendar is in year view
+    - When: the user views it
+    - Then: all 12 months of the year are shown at once, each labeled with its 3-letter English abbreviation (Jan, Feb, Mar, ..., Dec) in the same style as the weekday header, each showing all of its days as small squares, still colored and interactive (reminder markers, tap-to-open-day-detail) exactly as in month/week view
+
+43. **Edge case — no weekday header in year view**
+    - Given: the calendar is in year view
+    - When: the user views it
+    - Then: no weekday header (Mon...Sun) is shown — it would only be meaningful against the day-column alignment month view has and year view's compact per-month layout doesn't provide
+
 ## Acceptance criteria
 
 - [ ] User can give a new task a single specific date at creation time, instead of leaving it general
@@ -303,6 +327,10 @@ On the calendar, every view (month, week, year) shows a small colored marker on 
 - [ ] A reminder never affects any day's heatmap ratio or color, regardless of its own color
 - [ ] A reminder's text is rendered as plain text, never interpreted as HTML/script
 - [ ] A reminder never appears in the Scheduled list or the general urgency-sorted list — it is not a task and has no done/not-done state
+- [ ] Week and month view show a Mon-Sun weekday header row, 3-letter English abbreviations, Monday first
+- [ ] Month view's days align under the correct weekday column, with padding cells completing the first/last week
+- [ ] Year view shows all 12 months at once in one panel, each labeled with its 3-letter English abbreviation, each fully interactive (color, reminder markers, tap-to-open) like any other view
+- [ ] Year view shows no weekday header
 
 ## Out of scope
 

@@ -6,7 +6,10 @@
 // used to do directly).
 
 import { createTask, createSeries, loadTasks, loadSeries, saveSeries, loadOccurrences, saveOccurrences } from './data.js';
-import { renderTaskList, persistTasks, renderScheduledList, renderCalendar, refreshDatedViews, initCalendarAndReminderControls } from './render.js';
+import {
+  renderTaskList, persistTasks, renderScheduledList, renderCalendar,
+  refreshDatedViews, initCalendarAndReminderControls, setCalendarView,
+} from './render.js';
 
 // --- Create-task form (general / single-dated / recurring) ----------------
 
@@ -67,6 +70,18 @@ function handleCreateSubmit(event, doc, storage) {
 }
 
 export function initApp(doc, storage) {
+  // Calendar view/reference-date state lives at module scope in render.js
+  // (renderCalendar has no state of its own to thread through every call
+  // site). Since ES modules are cached per process, that state otherwise
+  // survives across separate initApp() calls sharing the module instance —
+  // real in production (there's only ever one page load), but a latent test
+  // -isolation bug: one test switching to week/year view left every later
+  // loadApp() in the same file starting from that view instead of month's
+  // default, until a coincidence (today's date landing outside the leaked
+  // view's window) turned it into visible failures. Reset explicitly here
+  // so every fresh app load — test or real — starts from the spec's
+  // required default (C29: month view) regardless of prior state.
+  setCalendarView('month');
   renderTaskList(doc, storage, loadTasks(storage));
   renderScheduledList(doc, storage);
   renderCalendar(doc, storage);

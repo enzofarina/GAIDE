@@ -11,7 +11,7 @@ import {
   loadReminders, saveReminders, createReminder, updateReminder, deleteReminder,
   toISODate,
 } from './data.js';
-import { buildGrid, shiftPeriod, referenceDateForToday } from './calendar.js';
+import { buildGrid, shiftPeriod, referenceDateForToday, WEEKDAY_LABELS } from './calendar.js';
 
 // --- Storage-failure UX ----------------------------------------------------
 // Constitution Principle 8: a failed write must be visible, never silent.
@@ -548,6 +548,54 @@ function buildCalendarDayCell(doc, storage, cell) {
   return el;
 }
 
+function buildBlankDayCell(doc) {
+  // Padding so real days line up under the right weekday column (month
+  // view) — never a day, never interactive, never counted by any
+  // [data-testid="calendar-day"] query.
+  const el = doc.createElement('div');
+  el.dataset.testid = 'calendar-day-blank';
+  el.className = 'calendar-day-blank';
+  el.setAttribute('aria-hidden', 'true');
+  return el;
+}
+
+function buildWeekdayHeader(doc) {
+  const header = doc.createElement('div');
+  header.dataset.testid = 'calendar-weekday-header';
+  header.className = 'calendar-weekday-header';
+  for (const label of WEEKDAY_LABELS) {
+    const cell = doc.createElement('span');
+    cell.dataset.testid = 'calendar-weekday-label';
+    cell.className = 'calendar-weekday-label';
+    cell.textContent = label;
+    header.appendChild(cell);
+  }
+  return header;
+}
+
+// Year view: 12 months at once, each its own compact panel — no weekday
+// header inside them (unpadded, GitHub-contributions-style flow), since a
+// header would only make sense against the day-column alignment month view
+// has and year view deliberately doesn't.
+function buildMonthBlock(doc, storage, monthGroup) {
+  const block = doc.createElement('div');
+  block.dataset.testid = 'calendar-month-block';
+  block.className = 'calendar-month-block';
+
+  const label = doc.createElement('h3');
+  label.dataset.testid = 'calendar-month-label';
+  label.className = 'calendar-month-label';
+  label.textContent = monthGroup.label;
+  block.appendChild(label);
+
+  const grid = doc.createElement('div');
+  grid.className = 'calendar-month-grid';
+  grid.append(...monthGroup.cells.map((cell) => buildCalendarDayCell(doc, storage, cell)));
+  block.appendChild(grid);
+
+  return block;
+}
+
 export function renderCalendar(doc, storage) {
   ensureReferenceDate();
   const stores = {
@@ -556,10 +604,25 @@ export function renderCalendar(doc, storage) {
     archive: loadArchive(storage),
   };
   const reminders = loadReminders(storage);
-  const cells = buildGrid(calendarState.view, calendarState.referenceDate, today(), stores, reminders);
+  const view = calendarState.view;
+  const result = buildGrid(view, calendarState.referenceDate, today(), stores, reminders);
 
+  const header = doc.querySelector('[data-testid="calendar-weekday-header"]');
   const grid = doc.querySelector('[data-testid="calendar-grid"]');
-  grid.replaceChildren(...cells.map((cell) => buildCalendarDayCell(doc, storage, cell)));
+  grid.dataset.view = view;
+
+  if (view === 'year') {
+    header.hidden = true;
+    header.replaceChildren();
+    grid.replaceChildren(...result.map((monthGroup) => buildMonthBlock(doc, storage, monthGroup)));
+    return;
+  }
+
+  header.hidden = false;
+  header.replaceChildren(...buildWeekdayHeader(doc).childNodes);
+  grid.replaceChildren(
+    ...result.map((cell) => (cell.blank ? buildBlankDayCell(doc) : buildCalendarDayCell(doc, storage, cell))),
+  );
 }
 
 // --- Day-detail panel (read-only) -----------------------------------------

@@ -277,6 +277,23 @@ h2 {
   cursor: pointer;
 }
 
+/* Mon-Sun header row, same 7-column grid as .calendar-grid in month/week
+   view so labels line up with the day columns beneath them. Hidden
+   entirely in year view — see render.js's renderCalendar. */
+.calendar-weekday-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 0.25rem;
+}
+
+.calendar-weekday-label {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #555;
+  text-transform: uppercase;
+}
+
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -304,6 +321,54 @@ h2 {
 .calendar-day.today {
   outline: 2px solid var(--color-text);
   outline-offset: -2px;
+}
+
+/* Padding cells (month view only) — same grid track as a real day, but
+   invisible and inert, so day 1 lands under the right weekday column. */
+.calendar-day-blank {
+  aspect-ratio: 1;
+}
+
+/* Year view: swap the single 7-column day grid for a wrapping row of 12
+   compact month panels, each with its own tiny 7-column day grid — "quero
+   que os quadrados fiquem bem pequenos para caber" overrides the
+   touch-target minimum used everywhere else in the calendar; deliberate,
+   flagged for Task 22's on-device pass, not an oversight. */
+.calendar-grid[data-view="year"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.calendar-month-block {
+  flex: 1 1 140px;
+  min-width: 120px;
+}
+
+.calendar-month-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.calendar-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.calendar-month-grid .calendar-day {
+  min-width: 0;
+  min-height: 0;
+  border-width: 0.5px;
+  border-radius: 1px;
+}
+
+.calendar-month-grid .reminder-marker {
+  width: 0.3rem;
+  height: 0.3rem;
 }
 
 .reminder-marker {

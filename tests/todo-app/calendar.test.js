@@ -149,3 +149,76 @@ describe('C18 (tap-opens wiring): tapping a day cell opens the day-detail view',
     assert.equal(panel.hidden, false);
   });
 });
+
+// --- Calendar formatting follow-up (post-Task-23): weekday header row in
+// week/month view, month view aligned to weekday columns, year view as a
+// single 12-month panel with month labels and no weekday header. Not part
+// of the original 50 acceptance criteria — added when the user asked for
+// this display refinement after the initial build.
+
+describe('week and month views show a Mon-Sun weekday header', () => {
+  test('week view shows 7 header labels in Mon..Sun order', async () => {
+    const window = await loadApp({});
+    window.document.querySelector('[data-testid="calendar-view-week"]').click();
+    const labels = [...window.document.querySelectorAll('[data-testid="calendar-weekday-label"]')].map((el) => el.textContent);
+    assert.deepEqual(labels, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+  });
+
+  test('month view (default) shows the same header', async () => {
+    const window = await loadApp({});
+    const header = window.document.querySelector('[data-testid="calendar-weekday-header"]');
+    assert.equal(header.hidden, false);
+    const labels = [...header.querySelectorAll('[data-testid="calendar-weekday-label"]')].map((el) => el.textContent);
+    assert.deepEqual(labels, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+  });
+});
+
+describe('month view aligns days under the correct weekday column', () => {
+  test('the first real day cell is preceded by the correct number of blank cells', async () => {
+    const window = await loadApp({});
+    const today = new Date();
+    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const expectedLeadingBlanks = (firstOfMonth.getDay() + 6) % 7; // Monday-first offset
+
+    const grid = window.document.querySelector('[data-testid="calendar-grid"]');
+    const children = [...grid.children];
+    const firstDayIndex = children.findIndex((el) => el.dataset.testid === 'calendar-day');
+    assert.equal(firstDayIndex, expectedLeadingBlanks);
+    assert.equal(children.slice(0, expectedLeadingBlanks).every((el) => el.dataset.testid === 'calendar-day-blank'), true);
+  });
+
+  test('the grid always completes whole weeks (length is a multiple of 7)', async () => {
+    const window = await loadApp({});
+    const grid = window.document.querySelector('[data-testid="calendar-grid"]');
+    assert.equal(grid.children.length % 7, 0);
+  });
+});
+
+describe('year view shows all 12 months at once, with month labels and no weekday header', () => {
+  test('12 month blocks, each labeled Jan..Dec, header hidden', async () => {
+    const window = await loadApp({});
+    window.document.querySelector('[data-testid="calendar-view-year"]').click();
+
+    const header = window.document.querySelector('[data-testid="calendar-weekday-header"]');
+    assert.equal(header.hidden, true);
+    assert.equal(header.querySelectorAll('[data-testid="calendar-weekday-label"]').length, 0);
+
+    const blocks = [...window.document.querySelectorAll('[data-testid="calendar-month-block"]')];
+    assert.equal(blocks.length, 12);
+    const labels = blocks.map((b) => b.querySelector('[data-testid="calendar-month-label"]').textContent);
+    assert.deepEqual(labels, ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
+  });
+
+  test('each month block contains exactly that month\'s number of days, no padding', async () => {
+    const window = await loadApp({});
+    window.document.querySelector('[data-testid="calendar-view-year"]').click();
+    const year = new Date().getFullYear();
+
+    const blocks = [...window.document.querySelectorAll('[data-testid="calendar-month-block"]')];
+    blocks.forEach((block, index) => {
+      const daysInMonth = new Date(year, index + 1, 0).getDate();
+      assert.equal(block.querySelectorAll('[data-testid="calendar-day"]').length, daysInMonth);
+      assert.equal(block.querySelectorAll('[data-testid="calendar-day-blank"]').length, 0);
+    });
+  });
+});
